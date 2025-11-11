@@ -4,336 +4,279 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Evaluación Flash Python — One-question UI</title>
-
-    <!-- html2pdf for PDF export (optional) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+    <title>Demo — Evaluación Flash (Python + SQL)</title>
+    <link rel="icon" href="data:," />
     <style>
-        /* Modern skeuomorphism + neutral palette */
+        /* --- Modern skeuomorphism theme --- */
         :root {
-            --bg1: #e9eef7;
-            --card: #f6f9fc;
-            --accent: #6f7cff;
-            --accent-2: #7c6bff;
-            --muted: #59616b;
-            --glass: rgba(255, 255, 255, 0.6);
-            --soft-shadow: -12px 12px 24px rgba(100, 110, 140, 0.08), 8px -8px 20px rgba(255, 255, 255, 0.6) inset;
-            --inset: 0 8px 18px rgba(96, 110, 140, 0.08) inset;
+            --bg: #eef4fb;
+            --card: #f8fbff;
+            --accent: #5f6bff;
+            --accent2: #7a6bff;
+            --muted: #6b7280;
+            --ok: #0b8a4a;
+            --warn: #f57c00;
+            --danger: #d32f2f;
             --round: 14px;
         }
 
         * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            box-sizing: border-box
         }
 
         body {
-            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            background: linear-gradient(135deg, #e8f0ff 0%, #f6f9fc 100%);
-            color: #223;
-            padding: 28px;
+            font-family: Inter, system-ui, Arial;
+            background: linear-gradient(135deg, #eef6ff, #f7fbff);
+            color: #132237;
+            padding: 24px;
         }
 
         .wrap {
-            max-width: 960px;
+            max-width: 980px;
             margin: 0 auto;
-            background: linear-gradient(180deg, #fbfdff 0%, #f2f6fb 100%);
-            border-radius: 20px;
-            padding: 28px;
-            box-shadow: 0 14px 40px rgba(21, 38, 78, 0.08);
-            border: 1px solid rgba(120, 130, 160, 0.06);
+            background: linear-gradient(180deg, #fbfdff, #f1f6ff);
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 18px 48px rgba(20, 30, 70, 0.06);
+            border: 1px solid rgba(120, 140, 180, 0.04)
         }
 
         header {
             display: flex;
-            gap: 16px;
-            align-items: center;
-            margin-bottom: 20px;
+            gap: 12px;
+            align-items: center
         }
 
         header h1 {
             font-size: 20px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            margin: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
             -webkit-background-clip: text;
-            color: transparent;
-            margin-bottom: 2px;
+            color: transparent
         }
 
         header p {
-            color: var(--muted);
-            font-size: 13px;
             margin: 0;
+            font-size: 13px;
+            color: var(--muted)
         }
 
-        /* mode selector - skeuomorphic cards */
+        .start {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        .field {
+            background: var(--card);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 8px 12px 26px rgba(70, 90, 140, 0.04);
+            border: 1px solid rgba(120, 130, 160, 0.03)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(120, 130, 160, 0.06);
+            width: 260px
+        }
+
         .modes {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap
         }
 
         .mode {
-            background: var(--card);
+            padding: 10px 12px;
             border-radius: 12px;
-            padding: 12px 14px;
-            width: 220px;
+            background: linear-gradient(180deg, #fff, #f6f9ff);
             cursor: pointer;
-            box-shadow: var(--soft-shadow);
-            border: 1px solid rgba(120, 130, 200, 0.06);
-            transition: transform .18s ease, box-shadow .18s ease;
-        }
-
-        .mode:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 18px 36px rgba(111, 124, 255, 0.08);
+            border: 1px solid rgba(120, 130, 160, 0.06);
+            box-shadow: 8px 10px 20px rgba(60, 80, 120, 0.04)
         }
 
         .mode.active {
-            border-color: rgba(110, 120, 255, 0.35);
-            box-shadow: 0 20px 48px rgba(110, 120, 255, 0.09);
+            box-shadow: 0 20px 48px rgba(100, 110, 255, 0.08);
+            border-color: rgba(100, 110, 255, 0.18)
         }
 
-        .mode h3 {
-            font-size: 14px;
-            margin-bottom: 6px;
-            color: #123;
-        }
-
-        .mode p {
-            font-size: 12px;
-            color: var(--muted);
-            margin: 0;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            letter-spacing: .3px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(20, 30, 60, 0.06);
-            background: linear-gradient(180deg, var(--accent), var(--accent-2));
-            color: white;
-        }
-
-        .btn.ghost {
-            background: transparent;
-            color: var(--muted);
-            border: 1px solid rgba(120, 130, 160, 0.08);
-        }
-
-        /* Question card */
-        .question-stage {
+        .qstage {
             margin-top: 18px;
-            min-height: 220px;
-            position: relative;
+            display: none
         }
 
         .section-title {
             display: inline-block;
-            padding: 10px 14px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, rgba(120, 130, 255, 0.12), rgba(120, 130, 255, 0.06));
-            color: var(--accent-2);
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(120, 130, 255, 0.08), rgba(120, 130, 255, 0.04));
+            color: var(--accent2);
             font-weight: 700;
-            box-shadow: var(--inset);
-            margin-bottom: 12px;
+            margin-bottom: 10px
         }
 
         .qcard {
-            margin-top: 12px;
-            background: linear-gradient(180deg, #ffffff, #f7fbff);
-            border-radius: 16px;
-            padding: 18px;
-            box-shadow: 12px 18px 30px rgba(60, 80, 120, 0.06), -8px -8px 20px rgba(255, 255, 255, 0.8) inset;
-            border: 1px solid rgba(120, 130, 160, 0.04);
+            background: linear-gradient(180deg, #fff, #f6fbff);
+            padding: 16px;
+            border-radius: 14px;
+            box-shadow: 12px 18px 36px rgba(60, 80, 120, 0.04);
+            border: 1px solid rgba(120, 130, 160, 0.03)
         }
 
         .qtext {
             font-size: 16px;
-            margin-bottom: 12px;
-            color: #102030;
-            min-height: 44px;
+            margin-bottom: 12px
         }
 
         .choices {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px
         }
 
         .choice {
-            background: #fbfdff;
-            border-radius: 10px;
-            padding: 10px;
-            border: 1px solid rgba(100, 110, 140, 0.06);
             display: flex;
             align-items: center;
             gap: 10px;
-            cursor: pointer;
-            transition: box-shadow .15s ease, transform .12s ease;
-        }
-
-        .choice:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(30, 50, 90, 0.04);
-        }
-
-        .choice input {
-            transform: scale(1.05);
-        }
-
-        .input-text {
-            width: 100%;
-            padding: 10px;
+            padding: 8px;
             border-radius: 10px;
-            border: 1px solid rgba(120, 130, 160, 0.08);
-            font-family: monospace;
+            border: 1px solid rgba(120, 130, 160, 0.04);
+            cursor: pointer;
+            background: #fbfdff
         }
 
-        /* progress and timer */
-        .progress-row {
+        .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            margin-top: 10px;
-            flex-wrap: wrap;
+            margin-top: 14px;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(180deg, var(--accent), var(--accent2));
+            color: white;
+            box-shadow: 0 10px 26px rgba(70, 90, 200, 0.08)
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid rgba(120, 130, 160, 0.06)
         }
 
         .progress {
-            flex: 1;
-            height: 10px;
-            background: linear-gradient(90deg, #ecf0ff, #f3f6ff);
+            height: 12px;
+            background: linear-gradient(90deg, #eef4ff, #f6f9ff);
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid rgba(120, 130, 160, 0.03);
-            margin-right: 12px;
+            border: 1px solid rgba(120, 130, 160, 0.03)
         }
 
         .progress>i {
             display: block;
             height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
             border-radius: 10px;
-            transition: width .35s ease;
+            transition: width .35s
         }
 
         .timer {
-            min-width: 130px;
-            text-align: right;
             font-weight: 800;
-            color: var(--accent-2);
+            color: var(--accent2)
         }
 
-        .timer.small {
-            font-size: 14px;
-        }
-
-        .timer.warn {
-            color: #f57c00;
-        }
-
-        .timer.danger {
-            color: #d32f2f;
-        }
-
-        /* footer controls (prev/next/evaluate) */
-        .nav {
-            display: flex;
-            gap: 10px;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        .nav-left {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .btn.secondary {
-            background: linear-gradient(180deg, #fff, #f4f7ff);
-            color: var(--muted);
-            border: 1px solid rgba(120, 130, 160, 0.06);
-            box-shadow: 0 8px 20px rgba(20, 30, 60, 0.04);
-        }
-
-        /* Report styles */
         .report {
-            margin-top: 20px;
-            padding: 18px;
+            margin-top: 16px;
+            padding: 14px;
             border-radius: 12px;
-            background: linear-gradient(180deg, #ffffff, #f7fbff);
-            box-shadow: 12px 18px 30px rgba(60, 80, 120, 0.04);
-            border: 1px solid rgba(120, 130, 160, 0.04);
+            background: linear-gradient(180deg, #fff, #f7fbff);
+            border: 1px solid rgba(120, 130, 160, 0.03);
+            box-shadow: 12px 18px 30px rgba(60, 80, 120, 0.04)
         }
 
         .badge {
             padding: 6px 10px;
             border-radius: 999px;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .badge.excellent {
-            background: #e8fff0;
-            color: #0b7a4e;
-            border: 1px solid rgba(11, 122, 78, 0.08);
+            font-weight: 700
         }
 
         .badge.good {
-            background: #f0f3ff;
-            color: var(--accent-2);
-            border: 1px solid rgba(110, 120, 255, 0.08);
+            background: #e7fff0;
+            color: #0b7a4e;
+            border: 1px solid rgba(11, 122, 78, 0.06)
         }
 
-        .badge.needs {
-            background: #fff4e6;
+        .badge.bad {
+            background: #fff7ec;
             color: #b24f00;
-            border: 1px solid rgba(178, 79, 0, 0.08);
+            border: 1px solid rgba(178, 79, 0, 0.06)
+        }
+
+        .section-summaries {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px
+        }
+
+        .sbox {
+            padding: 10px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #fff, #fbfdff);
+            border: 1px solid rgba(120, 130, 160, 0.04);
+            min-width: 220px
+        }
+
+        .sbox.good {
+            border-color: rgba(11, 122, 78, 0.12);
+            box-shadow: 0 8px 20px rgba(11, 122, 78, 0.04) inset
+        }
+
+        .sbox.bad {
+            border-color: rgba(178, 79, 0, 0.10)
         }
 
         .wrong-list {
-            margin-top: 8px;
-            color: #333;
+            margin-top: 10px
+        }
+
+        .medal {
+            width: 48px;
+            height: 48px;
+            display: inline-block;
+            vertical-align: middle
         }
 
         .small {
             font-size: 13px;
-            color: var(--muted);
+            color: var(--muted)
         }
 
         @media (max-width:720px) {
-            .modes {
-                justify-content: center;
-            }
-
-            .mode {
-                width: 100%;
-                max-width: 360px;
+            .section-summaries {
+                flex-direction: column
             }
         }
     </style>
@@ -344,375 +287,218 @@
 
         <header>
             <div>
-                <h1>🐍 Evaluación Flash Python</h1>
-                <p>Preguntas básicas — modo “un pregunta a la vez”</p>
+                <h1>Evaluación Flash — Demo (Python + SQL)</h1>
+                <p>Modo: una pregunta a la vez · Cronómetro por pregunta</p>
             </div>
-            <div style="margin-left:auto; text-align:right;">
-                <div class="small">Archivo base: <strong>pflash-index_v1.html</strong></div>
-                <div class="small">(Adaptado)</div>
+            <div style="margin-left:auto;text-align:right">
+                <div class="small">Demo: 5 preguntas</div>
             </div>
         </header>
 
-        <!-- Mode selector: No timer / 5s / 10s per question -->
-        <div>
-            <div class="small" style="margin-bottom:8px;">Modo por pregunta — el cronómetro se reinicia en cada pregunta
+        <!-- START: Setup -->
+        <div class="start" id="startPanel">
+            <div class="field">
+                <label for="nick">Nickname (obligatorio)</label>
+                <input id="nick" type="text" placeholder="Ej. AdaLovelace">
             </div>
-            <div class="modes" id="modeOptions">
-                <div class="mode active" data-mode="none" onclick="setMode(this)">
-                    <h3>Sin cronómetro</h3>
-                    <p>Responde libremente. Ningún límite por pregunta.</p>
-                </div>
-                <div class="mode" data-mode="5" onclick="setMode(this)">
-                    <h3>⏱ 5 segundos</h3>
-                    <p>Modo rápido — 5s para cada pregunta.</p>
-                </div>
-                <div class="mode" data-mode="10" onclick="setMode(this)">
-                    <h3>⏱ 10 segundos</h3>
-                    <p>Modo intermedio — 10s por pregunta.</p>
+
+            <div class="field">
+                <label>Modo por pregunta</label>
+                <div class="modes" id="modeOptions">
+                    <div class="mode active" data-mode="none" onclick="setMode(this)"><strong>Sin cronómetro</strong>
+                        <div class="small">Libre</div>
+                    </div>
+                    <div class="mode" data-mode="5" onclick="setMode(this)"><strong>5 s</strong>
+                        <div class="small">Rápido</div>
+                    </div>
+                    <div class="mode" data-mode="10" onclick="setMode(this)"><strong>10 s</strong>
+                        <div class="small">Intermedio</div>
+                    </div>
+                    <div class="mode" data-mode="15" onclick="setMode(this)"><strong>15 s</strong>
+                        <div class="small">Moderado</div>
+                    </div>
+                    <div class="mode" data-mode="20" onclick="setMode(this)"><strong>20 s</strong>
+                        <div class="small">Relajado</div>
+                    </div>
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px;">
-                <div class="small">Las preguntas se han barajado y se muestra solo el texto (número guardado
-                    internamente).</div>
-                <div class="controls">
-                    <button class="btn secondary" id="startBtn" onclick="startQuiz()">🚀 Comenzar</button>
-                </div>
+            <div style="margin-left:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+                <button class="btn" id="startBtn" onclick="startQuiz()">🚀 Comenzar</button>
+                <div class="small">Las preguntas se barajarán.</div>
             </div>
         </div>
+        <!-- END: Setup -->
 
-        <!-- Question stage -->
-        <div class="question-stage" id="stage" style="display:none;">
+        <!-- QUESTION STAGE -->
+        <div class="qstage" id="stage">
             <div class="section-title" id="currentSection">Sección</div>
 
             <div class="qcard">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:220px;">
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:220px">
                         <div class="qtext" id="qText">Pregunta</div>
-
                         <div id="answerArea"></div>
                     </div>
 
-                    <div style="width:220px; min-width:160px;">
-                        <div style="margin-bottom:8px;" class="small">Progreso</div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="progress"><i id="progressBar"></i></div>
-                            <div style="text-align:right;">
-                                <div id="progressCount" class="small">0 / 0</div>
-                            </div>
+                    <div style="width:220px;min-width:160px;">
+                        <div class="small">Progreso</div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <div class="progress" style="flex:1"><i id="progressBar"></i></div>
+                            <div class="small" id="progressCount">0 / 0</div>
                         </div>
 
-                        <div style="margin-top:12px;">
+                        <div style="margin-top:12px">
                             <div class="small">Cronómetro por pregunta</div>
-                            <div id="perTimer" class="timer small">—</div>
+                            <div id="perTimer" class="timer">—</div>
                         </div>
 
-                        <div style="margin-top:16px;">
+                        <div style="margin-top:12px">
                             <div class="small">Sin responder = 0 puntos</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="nav" style="margin-top:16px;">
-                    <div class="nav-left">
+                <div class="nav">
+                    <div style="display:flex;gap:8px;align-items:center">
                         <button class="btn ghost" id="prevBtn" onclick="prevQ()" disabled>⬅︎ Anterior</button>
                         <button class="btn ghost" id="nextBtn" onclick="nextQ()">Siguiente ➜</button>
                     </div>
 
-                    <div class="nav-right">
-                        <button class="btn secondary" onclick="shuffleQuestions(true)">🔀 Rebarajar</button>
-                        <button class="btn" id="evaluateBtn" onclick="evaluateQuiz()">Evaluar</button>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button class="btn ghost" onclick="shuffleQuestions(true)">🔀 Rebarajar</button>
+                        <button class="btn" id="evalBtn" onclick="evaluateQuiz()">Evaluar</button>
                     </div>
                 </div>
 
             </div>
-        </div>
 
-        <!-- Report area -->
-        <div id="reportArea" style="display:none; margin-top:18px;">
-            <div class="report" id="reportCard">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-                    <h3 id="reportTitle">Informe — Resultado</h3>
-                    <div id="reportScore" class="badge">0%</div>
-                </div>
+            <!-- Report will appear here -->
+            <div id="reportArea" style="display:none">
+                <div class="report">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <h3 id="reportTitle">Informe — Resultado</h3>
+                            <div class="small" id="reportNick"></div>
+                        </div>
+                        <div>
+                            <div id="reportScore" class="badge">0%</div>
+                        </div>
+                    </div>
 
-                <div style="margin-top:12px;">
-                    <div id="reportMessage" class="small"></div>
-                </div>
+                    <div id="reportMessage" class="small" style="margin-top:8px"></div>
 
-                <div id="wrongAnswers" style="margin-top:12px;"></div>
+                    <div class="section-summaries" id="sectionSummaries"></div>
 
-                <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
-                    <button class="btn" onclick="downloadPDFReport()">📥 Descargar PDF</button>
-                    <button class="btn secondary" onclick="location.reload()">🔁 Nueva Evaluación</button>
+                    <div id="wrongAnswers" class="wrong-list"></div>
+
+                    <!-- Email + consent to submit -->
+                    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:220px">
+                            <label for="email">Correo electrónico (para recibir copia)</label>
+                            <input id="email" type="email" placeholder="tu@correo.com">
+                        </div>
+                        <div style="min-width:220px">
+                            <label style="display:flex;gap:8px;align-items:center"><input id="consent" type="checkbox">
+                                Autorizo el envío de mis resultados y recibir una copia por correo</label>
+                        </div>
+                        <div style="margin-left:auto">
+                            <button class="btn" id="sendBtn" onclick="sendResults()" disabled>📤 Enviar y guardar mis
+                                resultados</button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+
         </div>
 
     </div>
 
     <script>
-        /*
-          Implementation notes:
-          - This script reads question groups from an embedded QUESTIONS object (derived from original form).
-          - Keeps internal ids and section titles.
-          - Shuffles questions at start or when requested.
-          - Shows one question at a time and enforces per-question timer (none / 5 / 10).
-          - On "Evaluar" it calculates score, shows color-coded result and a list of wrong answers.
+        /* =========================
+           Demo Quiz — 5 questions (mix Python + SQL)
+           Features:
+           - One question at a time, shuffled
+           - Per-question timer: none | 5 | 10 | 15 | 20
+           - Partial credit for MC (no negative)
+           - Unanswered = 0
+           - Evaluate -> shows global score, per-section summary (GOOD/BAD)
+           - After Evaluate: email + consent -> Submit to Google Form
+           - Placeholders for Google Form config below
+           ========================= */
+
+        /* ---------- GOOGLE FORM CONFIG ----------
+           Replace the placeholders below with your Google Form values.
+           - GOOGLE_FORM_URL: the form's `.../formResponse` URL (not the viewform URL).
+           - ENTRY_*: the entry IDs from the prefilled link (entry.XXXXXXXX).
+           Steps to find them are included in the INSTRUCTOR SETUP comment at the end.
         */
+        const GOOGLE_FORM_URL = "https://forms.gle/MvQDuM9LaRiu2GAUA"; // <-- replace
+        const ENTRY_NICKNAME = "entry.1111111111"; // <-- replace
+        const ENTRY_EMAIL = "entry.2222222222"; // <-- replace
+        const ENTRY_SCORE = "entry.3333333333"; // <-- replace
+        const ENTRY_SECTIONS = "entry.4444444444"; // <-- replace
+        /* ----------------------------------------- */
 
-        /* ---------- QUESTIONS DEFINITION ----------
-           For portability we reconstruct the questions from the original page content.
-           I used the same IDs and content you provided in the original file (pflash-index_v1.html).
-           Each question object shape:
-             {
-               id: 'p1_1', section: 'Sintaxis de Objetos', type: 'mc'|'fill'|'tf'|'identify',
-               text: 'Pregunta visible text',
-               choices: [ {text, value} ]    // only for mc
-               correct: ...                 // pattern to score (see below)
-             }
-           The correct answers follow the logic: MC -> an array of booleans, TF -> 'verdadero'|'falso',
-           fill/identify -> array of acceptable lowercase strings / substrings.
+        /* ---------- DEMO QUESTIONS ----------
+           Each question has:
+            id, section, type: 'mc'|'tf'|'fill'
+            text, choices (for mc), correct
+           For mc: correct is array of booleans (true for correct options)
+           For tf: correct is 'verdadero'|'falso'
+           For fill: correct is array of acceptable lowercase substrings OR null to accept any non-empty
         */
-        const QUESTIONS = (function () {
-            // Reconstructed from original file definitions; numbering kept in id.
-            // For brevity some acceptable alternatives are included.
-            return [
-                // Section 1
-                {
-                    id: 'p1_1', section: 'Sintaxis de Objetos', type: 'mc',
-                    text: "(Opción Múltiple) ¿Cuáles son formas válidas para definir una cadena en Python?",
-                    choices: [
-                        { text: "'texto entre comillas simples'", value: '1' },
-                        { text: '"texto entre comillas dobles"', value: '1' },
-                        { text: '`texto entre backticks`', value: '0' },
-                        { text: '"""texto entre triple comillas"""', value: '1' }
-                    ],
-                    correct: [true, true, false, true]
-                },
-                {
-                    id: 'p1_2', section: 'Sintaxis de Objetos', type: 'fill',
-                    text: "(Rellenar) ¿Con qué caracteres se define una tupla en Python? Escribe los dos caracteres:",
-                    correct: ['( )', '()', '(', ')', '(,)', '( , )']
-                },
-                {
-                    id: 'p1_3', section: 'Sintaxis de Objetos', type: 'tf',
-                    text: '(Verdadero/Falso) Las comillas triples ("""texto""") se usan para cadenas multilínea en Python.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p1_4', section: 'Sintaxis de Objetos', type: 'fill',
-                    text: '(Identificar) Identifica el tipo de objeto en: {"clave": 1, "otro": 2}',
-                    correct: ['diccionario', 'dict', 'dictionary']
-                },
+        const QUESTIONS = [
+            {
+                id: 'd1', section: 'Sintaxis', type: 'mc',
+                text: '¿Cuál(es) de las siguientes son formas válidas de definir una cadena en Python?',
+                choices: [
+                    { text: "'hola'" },
+                    { text: '"hola"' },
+                    { text: '`hola`' }
+                ],
+                correct: [true, true, false]
+            },
+            {
+                id: 'd2', section: 'Sintaxis', type: 'tf',
+                text: '(V/F) Las comillas triples se usan para cadenas multilínea en Python.',
+                correct: 'verdadero'
+            },
+            {
+                id: 'd3', section: 'Listas y Conjuntos', type: 'mc',
+                text: '¿Qué características distinguen un conjunto (set) de una lista?',
+                choices: [
+                    { text: 'Permite elementos duplicados' },
+                    { text: 'Elementos únicos' },
+                    { text: 'Orden garantizado' }
+                ],
+                correct: [false, true, false]
+            },
+            {
+                id: 'd4', section: 'SQL básico', type: 'fill',
+                text: 'Escribe la palabra SQL para seleccionar todas las columnas de una tabla (solo la palabra):',
+                correct: ['select']
+            },
+            {
+                id: 'd5', section: 'SQL básico', type: 'mc',
+                text: '¿Cuál cláusula se usa para filtrar filas en SQL?',
+                choices: [
+                    { text: 'ORDER BY' },
+                    { text: 'WHERE' },
+                    { text: 'GROUP BY' }
+                ],
+                correct: [false, true, false]
+            }
+        ];
 
-                // Section 2
-                {
-                    id: 'p2_1', section: 'Segmentación', type: 'mc',
-                    text: "(Opción Múltiple) ¿Cuáles objetos Python permiten segmentación por índice?",
-                    choices: [
-                        { text: 'lista', value: '1' },
-                        { text: 'tupla', value: '1' },
-                        { text: 'conjunto (set)', value: '0' },
-                        { text: 'cadena (string)', value: '1' }
-                    ],
-                    correct: [true, true, false, true]
-                },
-                {
-                    id: 'p2_2', section: 'Segmentación', type: 'fill',
-                    text: "(Rellenar) Escribe la expresión para acceder a los últimos 3 elementos de una lista llamada 'datos':",
-                    correct: ['datos[-3:]', 'datos[-3:len(datos)]']
-                },
-                {
-                    id: 'p2_3', section: 'Segmentación', type: 'tf',
-                    text: "(Verdadero/Falso) Puedo usar segmentación (slicing) en un conjunto (set).",
-                    correct: 'falso'
-                },
-                {
-                    id: 'p2_4', section: 'Segmentación', type: 'fill',
-                    text: '(Identificar) ¿Cuál es el resultado de x = "python"[1:4]?',
-                    correct: ['yth']
-                },
-
-                // Section 3
-                {
-                    id: 'p3_1', section: 'Series vs DataFrame', type: 'mc',
-                    text: "(Opción Múltiple) ¿Qué características ofrece solo DataFrame, no Series?",
-                    choices: [
-                        { text: 'Almacenamiento de múltiples columnas', value: '1' },
-                        { text: 'Indexación de filas y columnas', value: '1' },
-                        { text: 'Habilidad de seleccionar columnas', value: '1' },
-                        { text: 'Matemáticas elemento a elemento', value: '0' }
-                    ],
-                    correct: [true, true, true, false]
-                },
-                {
-                    id: 'p3_2', section: 'Series vs DataFrame', type: 'fill',
-                    text: '(Rellenar) ¿Cuál es la librería de Python para Series y DataFrame?',
-                    correct: ['pandas', 'pd']
-                },
-                {
-                    id: 'p3_3', section: 'Series vs DataFrame', type: 'tf',
-                    text: '(Verdadero/Falso) Una Series de pandas solo puede almacenar una única columna de datos.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p3_4', section: 'Series vs DataFrame', type: 'fill',
-                    text: "(Identificar) ¿Qué tipo de objeto se crea con pd.Series([10, 20, 30])?",
-                    correct: ['series', 'Series']
-                },
-
-                // Section 4
-                {
-                    id: 'p4_1', section: 'DataFrame vs Matriz', type: 'mc',
-                    text: "(Opción Múltiple) ¿Qué hace a un DataFrame distinto de una matriz NumPy?",
-                    choices: [
-                        { text: 'Etiquetas para columnas', value: '1' },
-                        { text: 'Permite tipos de datos heterogéneos', value: '1' },
-                        { text: 'Broadcasting aritmético', value: '0' },
-                        { text: 'Índices personalizados para filas', value: '1' }
-                    ],
-                    correct: [true, true, false, true]
-                },
-                {
-                    id: 'p4_2', section: 'DataFrame vs Matriz', type: 'fill',
-                    text: '(Rellenar) ¿Cuál es el paquete estándar de Python para objetos matriz?',
-                    correct: ['numpy', 'np']
-                },
-                {
-                    id: 'p4_3', section: 'DataFrame vs Matriz', type: 'tf',
-                    text: '(Verdadero/Falso) Un DataFrame de pandas puede almacenar columnas con tipos de datos mixtos, mientras que una matriz no.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p4_4', section: 'DataFrame vs Matriz', type: 'fill',
-                    text: '(Identificar) ¿Qué tipo de objeto se crea con np.array([[1,2],[3,4]])?',
-                    correct: ['ndarray', 'array', 'matriz']
-                },
-
-                // Section 5
-                {
-                    id: 'p5_1', section: 'Tupla, Diccionario y Conjunto', type: 'mc',
-                    text: "(Opción Múltiple) ¿Cuáles tipos de objetos Python son mutables?",
-                    choices: [
-                        { text: 'Tupla', value: '0' },
-                        { text: 'Diccionario', value: '1' },
-                        { text: 'Conjunto (set)', value: '1' },
-                        { text: 'Lista', value: '1' }
-                    ],
-                    correct: [false, true, true, true]
-                },
-                {
-                    id: 'p5_2', section: 'Tupla, Diccionario y Conjunto', type: 'fill',
-                    text: '(Rellenar) Escribe un ejemplo de conjunto Python con tres elementos:',
-                    correct: null  // any non-empty valid-looking set will be accepted (we check presence)
-                },
-                {
-                    id: 'p5_3', section: 'Tupla, Diccionario y Conjunto', type: 'tf',
-                    text: '(Verdadero/Falso) Los diccionarios no pueden contener claves duplicadas.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p5_4', section: 'Tupla, Diccionario y Conjunto', type: 'fill',
-                    text: '(Identificar) Identifica los tipos: x = (5, 6), y = {"a": 1}, z = {8, 9}',
-                    correct: ['tupla, diccionario, conjunto', 'tuple, dict, set', 'tupla,diccionario,conjunto']
-                },
-
-                // Section 6
-                {
-                    id: 'p6_1', section: 'Lista vs Conjunto', type: 'mc',
-                    text: "(Opción Múltiple) ¿Qué características distinguen un conjunto de una lista?",
-                    choices: [
-                        { text: 'Los elementos son únicos', value: '1' },
-                        { text: 'Los elementos pueden indexarse', value: '0' },
-                        { text: 'El orden está garantizado', value: '0' },
-                        { text: 'Soporta operaciones de conjunto (unión, intersección)', value: '1' }
-                    ],
-                    correct: [true, false, false, true]
-                },
-                {
-                    id: 'p6_2', section: 'Lista vs Conjunto', type: 'fill',
-                    text: '(Rellenar) Escribe una lista Python con valores 1, 2 y 2:',
-                    correct: ['[1, 2, 2]', '[1,2,2]', '[ 1, 2, 2 ]']
-                },
-                {
-                    id: 'p6_3', section: 'Lista vs Conjunto', type: 'tf',
-                    text: '(Verdadero/Falso) Las listas pueden contener elementos duplicados.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p6_4', section: 'Lista vs Conjunto', type: 'fill',
-                    text: '(Identificar) Identifica qué es cada uno: [2, 3, 4] y {2, 3, 4}',
-                    correct: ['lista, conjunto', 'list, set']
-                },
-
-                // Section 7
-                {
-                    id: 'p7_1', section: 'Indentación y Flujo', type: 'mc',
-                    text: "(Opción Múltiple) ¿Cuáles son niveles de indentación válidos en Python?",
-                    choices: [
-                        { text: '2 espacios', value: '1' },
-                        { text: '4 espacios', value: '1' },
-                        { text: '1 tabulación', value: '1' },
-                        { text: '3 espacios', value: '0' }
-                    ],
-                    correct: [true, true, true, false]
-                },
-                {
-                    id: 'p7_2', section: 'Indentación y Flujo', type: 'fill',
-                    text: '(Rellenar) ¿Qué símbolo es obligatorio al final de una línea if en Python?',
-                    correct: [':']
-                },
-                {
-                    id: 'p7_3', section: 'Indentación y Flujo', type: 'tf',
-                    text: '(Verdadero/Falso) Python requiere indentación consistente para definir bloques de código.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p7_4', section: 'Indentación y Flujo', type: 'fill',
-                    text: '(Identificar) Identifica el error en este código: for i in range(5)\\nprint(i)',
-                    correct: ['falta dos puntos', 'falta :', 'missing :']
-                },
-
-                // Section 8
-                {
-                    id: 'p8_1', section: 'Definición de Bucles', type: 'mc',
-                    text: "(Opción Múltiple) ¿Cuál es la estructura correcta de un bucle for en Python?",
-                    choices: [
-                        { text: 'for variable in secuencia:', value: '1' },
-                        { text: 'for variable in secuencia', value: '0' },
-                        { text: 'for (variable in secuencia):', value: '0' },
-                        { text: 'Luego hay indentación para el cuerpo del bucle', value: '1' }
-                    ],
-                    correct: [true, false, false, true]
-                },
-                {
-                    id: 'p8_2', section: 'Definición de Bucles', type: 'fill',
-                    text: "(Rellenar) Completa la estructura: if condition: ... _____ print('no')",
-                    correct: ['else:', 'else']
-                },
-                {
-                    id: 'p8_3', section: 'Definición de Bucles', type: 'tf',
-                    text: '(Verdadero/Falso) La cláusula else puede usarse sin elif en una estructura if-elif-else.',
-                    correct: 'verdadero'
-                },
-                {
-                    id: 'p8_4', section: 'Definición de Bucles', type: 'fill',
-                    text: "(Identificar) ¿Cuál es el error principal? if x > 5\\n    print('mayor')",
-                    correct: ['falta :', 'missing :']
-                }
-
-            ];
-        })();
-
-        /* ---------- State ---------- */
-        let modePerQuestion = 'none'; // 'none' | '5' | '10'
-        let questions = []; // will be shuffled copy
+        /* ---------- STATE ---------- */
+        let modePerQuestion = 'none';
+        let questions = [];
         let currentIndex = 0;
+        let answers = {}; // keyed by id; mc => array of indices; tf => 'verdadero'/'falso'; fill => string
         let perTimerInterval = null;
         let perTimeLeft = 0;
-        let answers = {}; // store user answers keyed by question id
 
         /* ---------- UI helpers ---------- */
         function setMode(el) {
@@ -720,314 +506,396 @@
             el.classList.add('active');
             modePerQuestion = el.dataset.mode;
         }
-
         function startQuiz() {
-            // make a shallow copy and shuffle
+            const nick = document.getElementById('nick').value.trim();
+            if (!nick) {
+                alert('Introduce tu nickname antes de comenzar.');
+                return;
+            }
+            // shallow copy and shuffle
             questions = QUESTIONS.map(q => Object.assign({}, q));
-            shuffleQuestions(false);
+            shuffleArray(questions);
             currentIndex = 0;
             answers = {};
+            document.getElementById('startPanel').style.display = 'none';
             document.getElementById('stage').style.display = 'block';
             document.getElementById('reportArea').style.display = 'none';
             renderCurrent();
         }
-
         function shuffleQuestions(preservePosition) {
-            // shuffle in-place using Fisher-Yates
-            for (let i = questions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [questions[i], questions[j]] = [questions[j], questions[i]];
-            }
-            // reset index if asked
+            shuffleArray(questions);
             if (!preservePosition) currentIndex = 0;
             renderCurrent();
         }
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
 
-        /* ---------- Render question ---------- */
+        /* ---------- render ---------- */
         function renderCurrent() {
             clearPerTimer();
             const q = questions[currentIndex];
             if (!q) return;
-
-            // section title, question text
             document.getElementById('currentSection').textContent = q.section;
-            // show question text without numbering (id kept internally)
             document.getElementById('qText').textContent = q.text;
-
-            // build answer area depending on type
             const area = document.getElementById('answerArea');
             area.innerHTML = '';
 
             if (q.type === 'mc') {
-                const container = document.createElement('div');
-                container.className = 'choices';
+                const container = document.createElement('div'); container.className = 'choices';
                 q.choices.forEach((c, idx) => {
-                    const wrapper = document.createElement('label');
-                    wrapper.className = 'choice';
-                    wrapper.innerHTML = `
-        <input type="checkbox" data-q="${q.id}" data-idx="${idx}">
-        <div style="flex:1;">${c.text}</div>
-      `;
-                    // restore checked from answers if exists
-                    const cb = wrapper.querySelector('input');
-                    const saved = answers[q.id];
-                    if (saved && Array.isArray(saved) && saved.includes(idx)) cb.checked = true;
+                    const lab = document.createElement('label'); lab.className = 'choice';
+                    lab.innerHTML = `<input type="checkbox" data-q="${q.id}" data-idx="${idx}"> <div style="flex:1">${c.text}</div>`;
+                    const cb = lab.querySelector('input');
+                    if (answers[q.id] && answers[q.id].includes(idx)) cb.checked = true;
                     cb.addEventListener('change', () => {
                         const checked = Array.from(container.querySelectorAll('input:checked')).map(i => +i.dataset.idx);
                         answers[q.id] = checked;
                     });
-                    container.appendChild(wrapper);
+                    container.appendChild(lab);
                 });
                 area.appendChild(container);
             } else if (q.type === 'tf') {
-                const container = document.createElement('div');
-                container.className = 'choices';
+                const container = document.createElement('div'); container.className = 'choices';
                 ['verdadero', 'falso'].forEach(opt => {
-                    const wrapper = document.createElement('label');
-                    wrapper.className = 'choice';
-                    wrapper.innerHTML = `<input type="radio" name="${q.id}" data-q="${q.id}" value="${opt}"> <div style="flex:1;">${opt[0].toUpperCase() + opt.slice(1)}</div>`;
-                    const rb = wrapper.querySelector('input');
+                    const lab = document.createElement('label'); lab.className = 'choice';
+                    lab.innerHTML = `<input type="radio" name="${q.id}" value="${opt}"> <div style="flex:1">${opt[0].toUpperCase() + opt.slice(1)}</div>`;
+                    const rb = lab.querySelector('input');
                     if (answers[q.id] && answers[q.id] === opt) rb.checked = true;
                     rb.addEventListener('change', () => answers[q.id] = rb.value);
-                    container.appendChild(wrapper);
+                    container.appendChild(lab);
                 });
                 area.appendChild(container);
-            } else if (q.type === 'fill' || q.type === 'identify') {
-                const input = document.createElement('input');
-                input.className = 'input-text';
-                input.type = 'text';
-                input.placeholder = 'Tu respuesta...';
+            } else if (q.type === 'fill') {
+                const input = document.createElement('input'); input.className = 'field'; input.type = 'text'; input.placeholder = 'Tu respuesta...';
+                input.style.width = '100%';
                 input.value = answers[q.id] || '';
                 input.addEventListener('input', () => answers[q.id] = input.value.trim());
                 area.appendChild(input);
             }
 
             // progress
-            const doneCount = Object.keys(answers).length;
             document.getElementById('progressCount').textContent = `${currentIndex + 1} / ${questions.length}`;
-            const pct = Math.round(((currentIndex) / Math.max(1, questions.length - 1)) * 100);
             document.getElementById('progressBar').style.width = `${Math.round(((currentIndex) / questions.length) * 100)}%`;
-
-            // prev/next buttons
             document.getElementById('prevBtn').disabled = currentIndex === 0;
             document.getElementById('nextBtn').disabled = currentIndex === questions.length - 1;
 
-            // start per-question timer
             startPerTimer();
         }
 
-        /* ---------- Navigation ---------- */
-        function nextQ() {
-            saveCurrentInput(); // just to be safe
-            if (currentIndex < questions.length - 1) {
-                currentIndex++;
-                renderCurrent();
-            }
-        }
-        function prevQ() {
-            saveCurrentInput();
-            if (currentIndex > 0) {
-                currentIndex--;
-                renderCurrent();
-            }
-        }
-
+        /* ---------- navigation ---------- */
+        function nextQ() { saveCurrentInput(); if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); } }
+        function prevQ() { saveCurrentInput(); if (currentIndex > 0) { currentIndex--; renderCurrent(); } }
         function saveCurrentInput() {
-            // data already saved on change, but try to fetch inputs if user typed and didn't trigger change
             const q = questions[currentIndex];
             if (!q) return;
-            if (q.type === 'fill' || q.type === 'identify') {
+            if (q.type === 'fill') {
                 const txt = document.querySelector('#answerArea input');
                 if (txt) answers[q.id] = txt.value.trim();
             } else if (q.type === 'mc') {
                 const checked = Array.from(document.querySelectorAll('#answerArea input[type="checkbox"]:checked')).map(i => +i.dataset.idx);
-                answers[q.id] = checked;
+                if (checked.length) answers[q.id] = checked;
             } else if (q.type === 'tf') {
                 const rb = document.querySelector('#answerArea input[type="radio"]:checked');
                 if (rb) answers[q.id] = rb.value;
             }
         }
 
-        /* ---------- Per-question timer ---------- */
+        /* ---------- per-question timer ---------- */
         function startPerTimer() {
             clearPerTimer();
             const el = document.getElementById('perTimer');
             if (modePerQuestion === 'none') {
                 el.textContent = '—';
-                el.className = 'timer small';
                 return;
             }
             perTimeLeft = parseInt(modePerQuestion, 10);
-            updatePerTimerUI();
+            el.textContent = `⏱ ${perTimeLeft}s`;
             perTimerInterval = setInterval(() => {
                 perTimeLeft--;
-                updatePerTimerUI();
+                el.textContent = `⏱ ${perTimeLeft}s`;
                 if (perTimeLeft <= 0) {
                     clearPerTimer();
-                    // auto-progress: unanswered stays as undefined (counts 0). Move to next question or show end.
-                    // For UX, we mark as unanswered (no change) and move on.
-                    if (currentIndex < questions.length - 1) {
-                        currentIndex++;
-                        renderCurrent();
-                    } else {
-                        // last question — optionally evaluate automatically
-                        evaluateQuiz();
-                    }
+                    // auto-advance; unanswered stays as is (0)
+                    if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); } else { evaluateQuiz(); }
                 }
             }, 1000);
         }
+        function clearPerTimer() { if (perTimerInterval) { clearInterval(perTimerInterval); perTimerInterval = null; } }
 
-        function updatePerTimerUI() {
-            const el = document.getElementById('perTimer');
-            el.textContent = `⏱ ${perTimeLeft}s`;
-            el.className = 'timer small';
-            if (perTimeLeft <= 3) el.classList.add('danger');
-            else if (perTimeLeft <= 6) el.classList.add('warn');
-        }
-
-        function clearPerTimer() {
-            if (perTimerInterval) { clearInterval(perTimerInterval); perTimerInterval = null; }
-        }
-
-        /* ---------- Scoring ---------- */
+        /* ---------- scoring & evaluation ---------- */
         function evaluateQuiz() {
-            // ensure current input saved
             saveCurrentInput();
             clearPerTimer();
 
-            let total = questions.length;
-            let score = 0;
+            const totalQuestions = questions.length;
+            let totalPoints = 0; // sum of per-question points (each max 1.0)
+            let maxPoints = totalQuestions; // total max
+
+            // per-section aggregation
+            const sections = {}; // {section: {questions:[], points:0, max:0, correctCountFull:0}}
+            questions.forEach(q => {
+                if (!sections[q.section]) sections[q.section] = { questions: [], points: 0, max: 0, correctFull: 0 };
+                sections[q.section].questions.push(q);
+                sections[q.section].max += 1;
+            });
+
             const wrong = [];
 
             questions.forEach(q => {
                 const user = answers[q.id];
-                let ok = false;
+                let qpoints = 0;
 
                 if (q.type === 'mc') {
-                    // If user didn't check anything => unanswered => 0
-                    if (!Array.isArray(user) || user.length === 0) { ok = false; }
+                    // if user empty -> 0
+                    if (!Array.isArray(user) || user.length === 0) { qpoints = 0; }
                     else {
-                        // compare selected indices to correct mask
-                        const correctMask = q.correct.map((v, i) => v ? i : null).filter(i => i !== null);
-                        // user must select exactly those indices (order doesn't matter)
-                        const uSorted = Array.from(new Set(user)).sort((a, b) => a - b);
-                        const cSorted = Array.from(new Set(correctMask)).sort((a, b) => a - b);
-                        ok = (uSorted.length === cSorted.length) && uSorted.every((v, i) => v === cSorted[i]);
+                        const correctIdx = q.correct.map((v, i) => v ? i : null).filter(i => i !== null);
+                        const correctlySelected = user.filter(i => correctIdx.includes(i)).length;
+                        qpoints = correctIdx.length ? (correctlySelected / correctIdx.length) : 0;
+                        // cap to 1.0
+                        if (qpoints > 1) qpoints = 1;
+                        // round 1 decimal
+                        qpoints = Math.round(qpoints * 10) / 10;
                     }
                 } else if (q.type === 'tf') {
-                    ok = !!user && user.toLowerCase() === q.correct.toLowerCase();
-                } else if (q.type === 'fill' || q.type === 'identify') {
-                    if (!user || user.trim() === '') { ok = false; }
+                    qpoints = (!!user && user.toLowerCase() === q.correct.toLowerCase()) ? 1 : 0;
+                } else if (q.type === 'fill') {
+                    if (!user || user.trim() === '') { qpoints = 0; }
+                    else if (q.correct === null) { qpoints = 1; }
                     else {
                         const u = user.toLowerCase();
-                        if (q.correct === null) {
-                            // open accept: non-empty => accept (but that might be too lenient).
-                            // We'll accept any non-empty for those questions (original form allowed free answers).
-                            ok = u.length > 0;
-                        } else {
-                            ok = q.correct.some(candidate => u.includes(candidate.toLowerCase()) || candidate.toLowerCase().includes(u));
-                        }
+                        const match = q.correct.some(c => u.includes(c.toLowerCase()) || c.toLowerCase().includes(u));
+                        qpoints = match ? 1 : 0;
                     }
                 }
 
-                if (ok) score++;
-                else {
-                    // record wrong with short explanation and the question ID for display
+                totalPoints += qpoints;
+                sections[q.section].points += qpoints;
+                if (qpoints >= 1) sections[q.section].correctFull += 1; // full correct answers count
+                // if wrong, push to list
+                if (qpoints < 1) {
                     wrong.push({
-                        id: q.id,
-                        section: q.section,
-                        text: q.text,
+                        id: q.id, section: q.section, text: q.text,
                         your: (user === undefined || user === null || (Array.isArray(user) && user.length === 0)) ? '(sin responder)' : (Array.isArray(user) ? user.map(i => (q.choices && q.choices[i] ? q.choices[i].text : i)).join(', ') : user),
-                        expected: expectedReadable(q)
+                        expected: expectedReadable(q),
+                        points: qpoints
                     });
                 }
             });
 
-            // show report
-            showReport(score, total, wrong);
+            const pct = Math.round((totalPoints / maxPoints) * 100);
+            showReport(totalPoints, maxPoints, pct, sections, wrong);
+
+            // prepare data for potential automatic send (but we send only when user clicks send)
         }
 
+        /* pretty expected */
         function expectedReadable(q) {
             if (q.type === 'mc') {
-                const good = q.correct.map((v, i) => v ? q.choices[i].text : null).filter(Boolean);
-                return good.join(' — ');
-            } else if (q.type === 'tf') {
-                return q.correct;
-            } else if (Array.isArray(q.correct)) {
-                return q.correct.join(' / ');
-            } else return '(respuesta esperada)';
+                return q.choices.map((c, i) => q.correct[i] ? c.text : null).filter(Boolean).join(' — ');
+            } else if (q.type === 'tf') return q.correct;
+            else if (Array.isArray(q.correct)) return q.correct.join(' / ');
+            else return '(respuesta esperada)';
         }
 
-        /* ---------- Report UI ---------- */
-        function showReport(score, total, wrong) {
-            const pct = Math.round((score / total) * 100);
-            const reportArea = document.getElementById('reportArea');
-            reportArea.style.display = 'block';
-            document.getElementById('reportScore').textContent = `${pct}%`;
-            const badge = document.getElementById('reportScore');
+        /* ---------- report UI ---------- */
+        function showReport(totalPoints, maxPoints, pct, sections, wrong) {
+            document.getElementById('reportArea').style.display = 'block';
+            document.getElementById('reportNick').textContent = 'Nickname: ' + document.getElementById('nick').value.trim();
+            const scoreEl = document.getElementById('reportScore');
+            scoreEl.textContent = `${Math.round((totalPoints / maxPoints) * 100)}%`;
 
-            // color-coded
-            badge.className = 'badge';
-            if (pct >= 90) { badge.classList.add('excellent'); document.getElementById('reportMessage').textContent = '¡Eres una estrella! Has dominado la mayoría de los conceptos.'; }
-            else if (pct >= 70) { badge.classList.add('good'); document.getElementById('reportMessage').textContent = '¡Buen trabajo! Repasa unas cuantas preguntas.'; }
-            else { badge.classList.add('needs'); document.getElementById('reportMessage').textContent = 'Sigue practicando — revisa las preguntas incorrectas.'; }
+            // overall message and badge color
+            const msgEl = document.getElementById('reportMessage');
+            if ((totalPoints / maxPoints) >= 0.9) msgEl.textContent = '¡Excelente! Gran dominio de los conceptos.';
+            else if ((totalPoints / maxPoints) >= 0.7) msgEl.textContent = 'Buen trabajo — algunas preguntas para repasar.';
+            else {
+                msgEl.textContent = 'No te rindas — practica más y volverás a mejorar. No et rendeixis. Don’t give up!';
+            }
+
+            // sections summary boxes
+            const ss = document.getElementById('sectionSummaries');
+            ss.innerHTML = '';
+            Object.keys(sections).forEach(sec => {
+                const s = sections[sec];
+                // per spec: <4 correct answers in section => BAD (orange). >=4 => GOOD (green)
+                const status = s.correctFull >= 4 ? 'GOOD' : 'BAD';
+                const pctSec = Math.round((s.points / s.max) * 100);
+                const box = document.createElement('div'); box.className = 'sbox ' + (status === 'GOOD' ? 'good' : 'bad');
+                box.innerHTML = `<div style="display:flex;align-items:center;gap:10px">
+      ${getMedalSVG(pctSec > 75)}
+      <div><strong>${sec}</strong><div class="small">${s.correctFull} correctas (puntos: ${Math.round(s.points * 10) / 10} / ${s.max})</div></div>
+    </div>`;
+                ss.appendChild(box);
+            });
 
             // wrong answers list
             const wa = document.getElementById('wrongAnswers');
             wa.innerHTML = '';
             if (wrong.length === 0) {
-                wa.innerHTML = '<div style="margin-top:8px;color:#0b7a4e;font-weight:700;">Todas las respuestas correctas ✅</div>';
+                wa.innerHTML = '<div style="margin-top:8px;color:#0b7a4e;font-weight:700">Todas las respuestas correctas ✅</div>';
             } else {
-                const h = document.createElement('div');
-                h.innerHTML = `<div style="margin-top:8px; font-weight:700;">Preguntas incorrectas (${wrong.length}):</div>`;
-                wa.appendChild(h);
-                const list = document.createElement('div');
-                list.className = 'wrong-list';
-                wrong.forEach(item => {
-                    const row = document.createElement('div');
-                    row.style.padding = '10px';
-                    row.style.marginTop = '8px';
-                    row.style.borderRadius = '10px';
-                    row.style.background = 'linear-gradient(180deg,#fff,#fbfdff)';
-                    row.style.border = '1px solid rgba(120,130,160,0.04)';
-                    row.innerHTML = `<div style="font-weight:700;">${item.section} — ${item.text}</div>
-        <div style="margin-top:6px;" class="small"><strong>Tu respuesta:</strong> ${escapeHtml(item.your)}</div>
-        <div class="small"><strong>Esperado:</strong> ${escapeHtml(item.expected)}</div>`;
-                    list.appendChild(row);
+                const hdr = document.createElement('div'); hdr.innerHTML = `<div style="font-weight:700;margin-top:8px">Preguntas incorrectas (${wrong.length}):</div>`; wa.appendChild(hdr);
+                wrong.forEach(w => {
+                    const el = document.createElement('div'); el.style.padding = '10px'; el.style.marginTop = '8px'; el.style.borderRadius = '10px'; el.style.background = 'linear-gradient(180deg,#fff,#fbfdff)'; el.style.border = '1px solid rgba(120,130,160,0.04)';
+                    el.innerHTML = `<div style="font-weight:700">${w.section} — ${w.text}</div>
+        <div class="small" style="margin-top:6px"><strong>Tu respuesta:</strong> ${escapeHtml(w.your)}</div>
+        <div class="small"><strong>Esperado:</strong> ${escapeHtml(w.expected)}</div>
+        <div class="small"><strong>Puntos obtenidos:</strong> ${w.points}</div>`;
+                    wa.appendChild(el);
                 });
-                wa.appendChild(list);
             }
 
-            // hide question stage to avoid confusion
-            document.getElementById('stage').style.display = 'none';
-            // scroll
-            document.getElementById('reportCard').scrollIntoView({ behavior: 'smooth' });
+            // enable send button when consent + email ok
+            const emailInput = document.getElementById('email'), consent = document.getElementById('consent');
+            function updateSendBtn() {
+                const ok = emailInput.value.trim() && consent.checked;
+                document.getElementById('sendBtn').disabled = !ok;
+            }
+            emailInput.addEventListener('input', updateSendBtn);
+            consent.addEventListener('change', updateSendBtn);
+
+            // save latest evaluation in a global object for sending
+            window.__lastEval = { totalPoints, maxPoints, pct: Math.round((totalPoints / maxPoints) * 100), sections, wrong };
         }
 
-        /* ---------- Utilities ---------- */
-        function escapeHtml(s) {
-            return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        /* ---------- sending to Google Form ---------- */
+        function sendResults() {
+            const cfg = { url: GOOGLE_FORM_URL, entryNick: ENTRY_NICKNAME, entryEmail: ENTRY_EMAIL, entryScore: ENTRY_SCORE, entrySections: ENTRY_SECTIONS };
+            // basic validation
+            const nick = document.getElementById('nick').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const consent = document.getElementById('consent').checked;
+            if (!nick || !email || !consent) {
+                alert('Introduce nickname, correo y marca la casilla de consentimiento.');
+                return;
+            }
+            if (!cfg.url.includes('forms')) { alert('Por favor, configure la URL del Google Form en el código.'); return; }
+
+            const s = window.__lastEval;
+            if (!s) { alert('No hay resultados para enviar. Evalúa el test primero.'); return; }
+
+            const sectionSummary = {};
+            Object.keys(s.sections).forEach(k => { const v = s.sections[k]; sectionSummary[k] = `${v.correctFull} correctas (puntos: ${Math.round(v.points * 10) / 10} / ${v.max})`; });
+
+            // prepare form-encoded payload
+            const data = new URLSearchParams();
+            data.append(cfg.entryNick, nick);
+            data.append(cfg.entryEmail, email);
+            data.append(cfg.entryScore, s.pct.toString());
+            data.append(cfg.entrySections, JSON.stringify(sectionSummary));
+
+            // send (no redirect)
+            fetch(cfg.url, { method: 'POST', body: data, mode: 'no-cors' }) // no-cors prevents JS seeing response, but sends data
+                .then(() => {
+                    alert('✅ Resultados enviados. Revisa tu correo (incl. carpeta Spam) si tienes la opción habilitada en el formulario.');
+                    document.getElementById('sendBtn').disabled = true;
+                })
+                .catch(e => {
+                    console.error('Error al enviar:', e);
+                    alert('Error al enviar resultados. Comprueba la URL del formulario.');
+                });
         }
 
-        function downloadPDFReport() {
-            const el = document.getElementById('reportCard');
-            const opt = {
-                margin: 10,
-                filename: `Evaluacion_Python_${new Date().toISOString().slice(0, 10)}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-            };
-            html2pdf().set(opt).from(el).save();
+        /* ---------- utilities ---------- */
+        function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+        /* Medal SVG (skeuomorphic); earned=true => gold, else grey */
+        function getMedalSVG(earned) {
+            if (earned) {
+                return `<svg class="medal" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g1" cx="30%" cy="30%"><stop offset="0%" stop-color="#fff9d6"/><stop offset="60%" stop-color="#ffd24a"/><stop offset="100%" stop-color="#e6a600"/></radialGradient>
+        <filter id="s1" x="-20%" y="-20%" width="150%" height="150%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.12"/></filter>
+      </defs>
+      <g filter="url(#s1)">
+        <circle cx="32" cy="22" r="12" fill="url(#g1)" stroke="#e6a600" stroke-width="1.5"/>
+        <path d="M10 6 L22 22 L14 22 Z" fill="#f0c02e"/>
+        <path d="M54 6 L42 22 L50 22 Z" fill="#f0c02e"/>
+        <rect x="24" y="34" width="16" height="24" rx="6" fill="#fff" opacity="0.04"/>
+      </g>
+    </svg>`;
+            } else {
+                return `<svg class="medal" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g2" cx="30%" cy="30%"><stop offset="0%" stop-color="#f6f7f9"/><stop offset="80%" stop-color="#cfd4da"/></radialGradient>
+      </defs>
+      <g>
+        <circle cx="32" cy="22" r="12" fill="url(#g2)" stroke="#bfc6cf" stroke-width="1.2"/>
+        <path d="M10 6 L22 22 L14 22 Z" fill="#d7dbe0"/>
+        <path d="M54 6 L42 22 L50 22 Z" fill="#d7dbe0"/>
+      </g>
+    </svg>`;
+            }
         }
 
-        /* ---------- initialization: show brief info ---------- */
-        (function init() {
-            // default mode is none
-            modePerQuestion = 'none';
-        })();
+        /* ---------- init ---------- */
+        (function init() { modePerQuestion = 'none'; })();
+
     </script>
 
+    <!-- =======================
+     INSTRUCTOR SETUP (TRILINGUAL)
+     These comments explain how to obtain the Google Form URL and entry IDs,
+     and how to enable "Collect email addresses" + "Send responders a copy".
+     They are intentionally included in three languages for your convenience.
+     =======================
+
+ESPAÑOL:
+1) Crea un formulario en https://forms.google.com con campos:
+   - Nickname (Respuesta corta)
+   - Email (Respuesta corta)
+   - Total Score (%) (Respuesta corta)
+   - Section Summary (Respuesta larga)
+2) En "Configuración" activa: "Recopilar direcciones de correo" y "Enviar a los encuestados una copia de sus respuestas".
+3) Para obtener las entradas 'entry.XXXXXXX':
+   - En el editor del formulario, pulsa "Obtener enlace de relleno" (Get pre-filled link).
+   - Rellena con datos de prueba y copia el link generado.
+   - En el link verás parámetros como &entry.1234567890=valor. Copia cada 'entry.XXXXXXXX' para usarlo abajo.
+4) En el código más arriba, reemplaza:
+   - GOOGLE_FORM_URL con la URL que termina en /formResponse
+   - ENTRY_NICKNAME / ENTRY_EMAIL / ENTRY_SCORE / ENTRY_SECTIONS con tus entry. IDs
+5) Publica el archivo en GitHub Pages y prueba. Cuando el usuario pulse "Enviar y guardar mis resultados",
+   el formulario recibirá los datos y Google enviará al alumno una copia automática (si la opción está activada).
+
+CATALÀ:
+1) Crea un formulari a https://forms.google.com amb camps:
+   - Nickname (Resposta curta)
+   - Email (Resposta curta)
+   - Total Score (%) (Resposta curta)
+   - Section Summary (Resposta llarga)
+2) A "Configuració" activa: "Recopilar adreces de correu electrònic" i "Enviar una còpia de les respostes als respondents".
+3) Per obtenir les entrades 'entry.XXXXXXX':
+   - A l'editor, fes clic a "Obtenir enllaç omplert prèviament".
+   - Omple amb dades de prova i copia l'enllaç generat.
+   - A l'enllaç veuràs paràmetres &entry.1234567890=valor. Copia cada 'entry.XXXXXXXX' per utilitzar-los al codi.
+4) Al codi, substitueix:
+   - GOOGLE_FORM_URL per la URL que acaba en /formResponse
+   - ENTRY_NICKNAME / ENTRY_EMAIL / ENTRY_SCORE / ENTRY_SECTIONS amb els teus entry. IDs
+5) Publica a GitHub Pages i prova. En prémer "Enviar i desar els meus resultats", el formulari rebrà les dades i Google enviarà una còpia al participant (si s'ha activat).
+
+ENGLISH:
+1) Create a Google Form at https://forms.google.com with fields:
+   - Nickname (Short answer)
+   - Email (Short answer)
+   - Total Score (%) (Short answer)
+   - Section Summary (Paragraph)
+2) In Settings enable: "Collect email addresses" and "Send responders a copy of their responses".
+3) To get 'entry.XXXXXXX' field IDs:
+   - In the form editor click "Get pre-filled link".
+   - Fill sample values and copy the generated link.
+   - In that link you will see parameters like &entry.1234567890=sample. Copy each 'entry.XXXXXXXX' for the code.
+4) In the code above replace:
+   - GOOGLE_FORM_URL with the formResponse URL (ends with /formResponse)
+   - ENTRY_NICKNAME / ENTRY_EMAIL / ENTRY_SCORE / ENTRY_SECTIONS with your entry. IDs
+5) Deploy to GitHub Pages and test. When the user clicks "Enviar y guardar mis resultados", the form will capture the data and Google will send an automatic copy to the respondent (if enabled).
+
+=======================
+END OF INSTRUCTOR SETUP -->
 </body>
 
 </html>
